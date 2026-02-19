@@ -8,43 +8,33 @@ export default function Dashboard() {
   const [task, setTask] = useState({ title: "", subject: "", dueDate: "" });
   const [loading, setLoading] = useState(true);
 
-  // ================= FETCH FUNCTIONS =================
 
-  // const fetchAllData = async () => {
-  //   try {
-  //     setLoading(true);
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
 
-  //     const [tasksRes, assignmentsRes, noticesRes] = await Promise.all([
-  //       API.get("/tasks"),
-  //       API.get("/assignments"),
+      const [tasksRes] = await Promise.all([
+        API.get("/tasks"),
+        // API.get("/assignments"),
        
-  //     ]);
+      ]);
 
-  //     setTasks(tasksRes.data || []);
-  //     setTeacherAssignments(assignmentsRes.data || []);
-  //     setNotices(noticesRes.data || []);
-  //   } catch (error) {
-  //     console.error("Error fetching dashboard data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      setTasks(tasksRes.data || []);
+   
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const fetchAllData = async () => {
+
+const fetchAssignments = async () => {
   try {
-    setLoading(true);
-
-    const [tasksRes, assignmentsRes] = await Promise.all([
-      API.get("/tasks"),
-      API.get("/assignments/teacher"),
-    ]);
-
-    setTasks(tasksRes.data || []);
-    setTeacherAssignments(assignmentsRes.data || []);
+    const res = await API.get("/assignments/public"); // ensure student token is present
+    setTeacherAssignments(res.data);
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
-  } finally {
-    setLoading(false);
+    console.log("Error fetching assignments:", error);
   }
 };
 
@@ -52,11 +42,14 @@ const fetchAllData = async () => {
 
 
 
+
+
   useEffect(() => {
     fetchAllData();
+    fetchAssignments();
+
   }, []);
 
-  // ================= TASK FUNCTIONS =================
 
   const addTask = async () => {
     if (!task.title) return;
@@ -79,14 +72,19 @@ const fetchAllData = async () => {
     }
   };
 
-  const deleteTask = async (id) => {
-    try {
-      await API.delete(`/tasks/${id}`);
-      fetchAllData();
-    } catch (error) {
-      console.error("Error deleting task:", error);
+ const deleteTask = async (id) => {
+  try {
+    const res = await API.delete(`/tasks/${id}`);
+    alert(res.data.message); // Shows "Task removed"
+    fetchAllData();
+  } catch (error) {
+    if (error.response) {
+      alert(`Error: ${error.response.data.message}`);
+    } else {
+      alert("Something went wrong!");
     }
-  };
+  }
+};
 
   // ================= PROGRESS =================
 
@@ -134,6 +132,7 @@ const fetchAllData = async () => {
           className="border p-2 rounded"
         />
         <button
+        type="button"
           onClick={addTask}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
@@ -215,3 +214,22 @@ const fetchAllData = async () => {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

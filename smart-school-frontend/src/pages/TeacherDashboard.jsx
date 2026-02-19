@@ -201,6 +201,240 @@
 
 
 
+// import { useState, useEffect } from "react";
+// import API from "../api/axios";
+// import Card from "../components/Card";
+
+// export default function TeacherDashboard() {
+//   const [assignments, setAssignments] = useState([]);
+//   const [studentsProgress, setStudentsProgress] = useState([]);
+//   const [notices, setNotices] = useState([]);
+//   const [assignment, setAssignment] = useState({ title: "", subject: "", dueDate: "" });
+//   const [notice, setNotice] = useState({ title: "", description: "", category: "" });
+//   const [loading, setLoading] = useState(true);
+
+//   const role = localStorage.getItem("role"); // check user role
+
+//   useEffect(() => {
+//     const fetchAllData = async () => {
+//       setLoading(true);
+//       try {
+//         // Fetch assignments safely
+//         let assignRes = { data: [] };
+//         try {
+//           assignRes = await API.get("/assignments/teacher"); // teacher-specific endpoint
+//         } catch (err) {
+//           console.warn("Assignments API failed, showing empty list");
+//         }
+
+//         let progressRes = { data: [] };
+//         try {
+//           progressRes = await API.get("/admin/students-progress");
+//         } catch (err) {
+//           console.warn("Student progress API failed, showing empty list");
+//         }
+
+//         let noticesRes = { data: [] };
+//         try {
+//           noticesRes = await API.get("/notices");
+//         } catch (err) {
+//           console.warn("Notices API failed, showing empty list");
+//         }
+
+//         setAssignments(assignRes.data || []);
+//         setStudentsProgress(progressRes.data || []);
+//         setNotices(noticesRes.data || []);
+//       } catch (err) {
+//         console.error("Error fetching dashboard data:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchAllData();
+//   }, []);
+
+//   // ---------------- Add Assignment ----------------
+//   const addAssignment = async () => {
+//     if (!assignment.title || !assignment.subject || !assignment.dueDate) {
+//       alert("Please fill all assignment fields");
+//       return;
+//     }
+
+//     try {
+//       await API.post("/assignments", assignment);
+//       setAssignment({ title: "", subject: "", dueDate: "" });
+
+//       // Refresh assignments
+//       const res = await API.get("/assignments/teacher");
+//       setAssignments(res.data || []);
+//     } catch (err) {
+//       console.error("Error adding assignment:", err);
+//       alert("Failed to add assignment");
+//     }
+//   };
+
+//   // ---------------- Add Notice ----------------
+//   const addNotice = async () => {
+//     if (!notice.title || !notice.description || !notice.category) {
+//       alert("Please fill all notice fields");
+//       return;
+//     }
+
+//     try {
+//       await API.post("/notices", notice);
+//       setNotice({ title: "", description: "", category: "" });
+
+//       // Refresh notices
+//       const res = await API.get("/notices");
+//       setNotices(res.data || []);
+//     } catch (err) {
+//       console.error("Error adding notice:", err);
+//       alert("Failed to add notice");
+//     }
+//   };
+
+//   // ---------------- Loading State ----------------
+//   if (loading) {
+//     return <div className="p-6 text-center text-lg font-semibold">Loading Dashboard...</div>;
+//   }
+
+//   return (
+//     <div className="p-6 max-w-5xl mx-auto">
+//       <h2 className="text-3xl font-bold mb-4">Teacher Dashboard</h2>
+
+//       {/* ================= Add Assignment (Teacher Only) ================= */}
+//       {role === "teacher" && (
+//         <>
+//           <h3 className="text-2xl font-semibold mb-2">Add Assignment</h3>
+//           <div className="mb-6 flex gap-2 flex-wrap">
+//             <input
+//               type="text"
+//               placeholder="Title"
+//               value={assignment.title}
+//               onChange={(e) => setAssignment({ ...assignment, title: e.target.value })}
+//               className="border p-2 rounded w-40"
+//             />
+//             <input
+//               type="text"
+//               placeholder="Subject"
+//               value={assignment.subject}
+//               onChange={(e) => setAssignment({ ...assignment, subject: e.target.value })}
+//               className="border p-2 rounded w-40"
+//             />
+//             <input
+//               type="date"
+//               value={assignment.dueDate}
+//               onChange={(e) => setAssignment({ ...assignment, dueDate: e.target.value })}
+//               className="border p-2 rounded"
+//             />
+//             <button
+//               onClick={addAssignment}
+//               className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
+//             >
+//               Add Assignment
+//             </button>
+//           </div>
+//         </>
+//       )}
+
+//       {/* ================= Assignments List ================= */}
+//       <h3 className="text-2xl font-semibold mt-6 mb-2">All Assignments</h3>
+//       {assignments.length === 0 ? (
+//         <p>No assignments yet.</p>
+//       ) : (
+//         assignments.map((a) => (
+//           <Card
+//             key={a._id}
+//             title={a.title}
+//             description={`Subject: ${a.subject} | Due: ${new Date(a.dueDate).toLocaleDateString()} | By: ${a.teacher?.name || "Unknown"}`}
+//           />
+//         ))
+//       )}
+
+//       {/* ================= Add Notice (Teacher Only) ================= */}
+//       {role === "teacher" && (
+//         <>
+//           <h3 className="text-2xl font-semibold mt-6 mb-2">Add Notice</h3>
+//           <div className="mb-6 flex gap-2 flex-wrap">
+//             <input
+//               type="text"
+//               placeholder="Title"
+//               value={notice.title}
+//               onChange={(e) => setNotice({ ...notice, title: e.target.value })}
+//               className="border p-2 rounded w-40"
+//             />
+//             <input
+//               type="text"
+//               placeholder="Category"
+//               value={notice.category}
+//               onChange={(e) => setNotice({ ...notice, category: e.target.value })}
+//               className="border p-2 rounded w-40"
+//             />
+//             <input
+//               type="text"
+//               placeholder="Description"
+//               value={notice.description}
+//               onChange={(e) => setNotice({ ...notice, description: e.target.value })}
+//               className="border p-2 rounded w-80"
+//             />
+//             <button
+//               onClick={addNotice}
+//               className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
+//             >
+//               Add Notice
+//             </button>
+//           </div>
+//         </>
+//       )}
+
+//       {/* ================= All Notices ================= */}
+//       <h3 className="text-2xl font-semibold mt-6 mb-2">All Notices</h3>
+//       {notices.length === 0 && <p>No notices yet.</p>}
+//       {notices.map((n) => (
+//         <Card
+//           key={n._id}
+//           title={n.title}
+//           description={`${n.description} | Category: ${n.category} | By: ${n.teacher?.name || "Unknown"}`}
+//         />
+//       ))}
+
+//       {/* ================= Student Progress ================= */}
+//       <h3 className="text-2xl font-semibold mt-6 mb-2">Student Progress</h3>
+//       {studentsProgress.length === 0 && <p>No student data yet.</p>}
+//       {studentsProgress.map((s) => (
+//         <Card
+//           key={s.email}
+//           title={s.student}
+//           description={`Email: ${s.email} | Progress: ${s.progress}%`}
+//         >
+//           <div className="w-full bg-gray-300 rounded h-3 mt-1">
+//             <div
+//               className="bg-green-500 h-3 rounded transition-all"
+//               style={{ width: `${s.progress}%` }}
+//             />
+//           </div>
+//         </Card>
+//       ))}
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -220,16 +454,35 @@ export default function TeacherDashboard() {
   const [notice, setNotice] = useState({ title: "", description: "", category: "" });
   const [loading, setLoading] = useState(true);
 
-  // ================= FETCH ALL DATA =================
+  const role = localStorage.getItem("role"); // check user role
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const [assignRes, progressRes, noticesRes] = await Promise.all([
-          API.get("/assignments/teacher"),
-          API.get("/admin/students-progress"),
-          API.get("/notices"),
-        ]);
+        // Fetch assignments safely
+        let assignRes = { data: [] };
+        try {
+          assignRes = await API.get("/assignments/teacher"); 
+        } catch {
+          console.warn("Assignments API failed, showing empty list");
+        }
+
+        // Fetch student progress
+        let progressRes = { data: [] };
+        try {
+          progressRes = await API.get("/admin/students-progress");
+        } catch {
+          console.warn("Student progress API failed, showing empty list");
+        }
+
+        // Fetch notices
+        let noticesRes = { data: [] };
+        try {
+          noticesRes = await API.get("/notices");
+        } catch {
+          console.warn("Notices API failed, showing empty list");
+        }
 
         setAssignments(assignRes.data || []);
         setStudentsProgress(progressRes.data || []);
@@ -244,44 +497,24 @@ export default function TeacherDashboard() {
     fetchAllData();
   }, []);
 
-  // ================= ADD ASSIGNMENT =================
-  // const addAssignment = async () => {
-  //   if (!assignment.title || !assignment.subject || !assignment.dueDate) {
-  //     alert("Please fill all assignment fields");
-  //     return;
-  //   }
+  // ---------------- Add Assignment ----------------
+  const addAssignment = async () => {
+    if (!assignment.title || !assignment.subject || !assignment.dueDate) {
+      alert("Please fill all assignment fields");
+      return;
+    }
 
-  //   try {
-  //     await API.post("/assignments", assignment);
-  //     setAssignment({ title: "", subject: "", dueDate: "" });
-  //     // Refetch assignments
-  //     const res = await API.get("/assignments/teacher");
-  //     setAssignments(res.data || []);
-  //   } catch (err) {
-  //     console.error("Error adding assignment:", err);
-  //   }
-  // };
+    try {
+      await API.post("/assignments", assignment);
+      setAssignment({ title: "", subject: "", dueDate: "" });
+      const res = await API.get("/assignments/teacher");
+      setAssignments(res.data || []);
+    } catch {
+      alert("Failed to add assignment");
+    }
+  };
 
-
-const addAssignment = async () => {
-  if (!assignment.title || !assignment.subject || !assignment.dueDate) {
-    alert("Please fill all assignment fields");
-    return;
-  }
-
-  try {
-    await API.post("/assignments", assignment); // now matches backend
-    setAssignment({ title: "", subject: "", dueDate: "" });
-
-    // Refetch assignments
-    const res = await API.get("/assignments/teacher");
-    setAssignments(res.data || []);
-  } catch (err) {
-    console.error("Error adding assignment:", err);
-  }
-};
-
-  // ================= ADD NOTICE =================
+  // ---------------- Add Notice ----------------
   const addNotice = async () => {
     if (!notice.title || !notice.description || !notice.category) {
       alert("Please fill all notice fields");
@@ -291,101 +524,108 @@ const addAssignment = async () => {
     try {
       await API.post("/notices", notice);
       setNotice({ title: "", description: "", category: "" });
-      // Refetch notices
       const res = await API.get("/notices");
       setNotices(res.data || []);
-    } catch (err) {
-      console.error("Error adding notice:", err);
+    } catch {
+      alert("Failed to add notice");
     }
   };
 
-  // ================= LOADING STATE =================
+  // ---------------- Loading State ----------------
   if (loading) {
     return <div className="p-6 text-center text-lg font-semibold">Loading Dashboard...</div>;
   }
 
-  // ================= RENDER =================
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h2 className="text-3xl font-bold mb-4">Teacher Dashboard</h2>
 
-      {/* Add Assignment */}
-      <h3 className="text-2xl font-semibold mb-2">Add Assignment</h3>
-      <div className="mb-6 flex gap-2 flex-wrap">
-        <input
-          type="text"
-          placeholder="Title"
-          value={assignment.title}
-          onChange={(e) => setAssignment({ ...assignment, title: e.target.value })}
-          className="border p-2 rounded w-40"
-        />
-        <input
-          type="text"
-          placeholder="Subject"
-          value={assignment.subject}
-          onChange={(e) => setAssignment({ ...assignment, subject: e.target.value })}
-          className="border p-2 rounded w-40"
-        />
-        <input
-          type="date"
-          value={assignment.dueDate}
-          onChange={(e) => setAssignment({ ...assignment, dueDate: e.target.value })}
-          className="border p-2 rounded"
-        />
-        <button
-          onClick={addAssignment}
-          className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
-        >
-          Add
-        </button>
-      </div>
+      {/* ================= Add Assignment ================= */}
+      {role === "teacher" && (
+        <>
+          <h3 className="text-2xl font-semibold mb-2">Add Assignment</h3>
+          <div className="mb-6 flex gap-2 flex-wrap">
+            <input
+              type="text"
+              placeholder="Title"
+              value={assignment.title}
+              onChange={(e) => setAssignment({ ...assignment, title: e.target.value })}
+              className="border p-2 rounded w-40"
+            />
+            <input
+              type="text"
+              placeholder="Subject"
+              value={assignment.subject}
+              onChange={(e) => setAssignment({ ...assignment, subject: e.target.value })}
+              className="border p-2 rounded w-40"
+            />
+            <input
+              type="date"
+              value={assignment.dueDate}
+              onChange={(e) => setAssignment({ ...assignment, dueDate: e.target.value })}
+              className="border p-2 rounded"
+            />
+            <button
+              onClick={addAssignment}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              Add Assignment
+            </button>
+          </div>
+        </>
+      )}
 
-      {/* Assignments List */}
-      <h3 className="text-2xl font-semibold mb-2">Your Assignments</h3>
-      {assignments.length === 0 && <p>No assignments yet.</p>}
-      {assignments.map((a) => (
-        <Card
-          key={a._id}
-          title={a.title}
-          description={`Subject: ${a.subject || "N/A"} | Due: ${
-            a.dueDate ? new Date(a.dueDate).toLocaleDateString("en-GB") : "No due date"
-          }`}
-        />
-      ))}
+      {/* ================= Assignments List ================= */}
+      <h3 className="text-2xl font-semibold mt-6 mb-2">All Assignments</h3>
+      {assignments.length === 0 ? (
+        <p>No assignments yet.</p>
+      ) : (
+        assignments.map((a) => (
+          <Card
+            key={a._id}
+            title={a.title}
+            description={`Subject: ${a.subject} | Due: ${new Date(a.dueDate).toLocaleDateString()} | By: ${a.teacher?.name || "Unknown"}`}
+          />
+        ))
+      )}
 
-      {/* Add Notice */}
-      <h3 className="text-2xl font-semibold mt-6 mb-2">Add Notice</h3>
-      <div className="mb-6 flex gap-2 flex-wrap">
-        <input
-          type="text"
-          placeholder="Title"
-          value={notice.title}
-          onChange={(e) => setNotice({ ...notice, title: e.target.value })}
-          className="border p-2 rounded w-40"
-        />
-        <input
-          type="text"
-          placeholder="Category"
-          value={notice.category}
-          onChange={(e) => setNotice({ ...notice, category: e.target.value })}
-          className="border p-2 rounded w-40"
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={notice.description}
-          onChange={(e) => setNotice({ ...notice, description: e.target.value })}
-          className="border p-2 rounded w-80"
-        />
-        <button
-          onClick={addNotice}
-          className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
-        >
-          Add Notice
-        </button>
-      </div>
+      {/* ================= Add Notice ================= */}
+      {role === "teacher" && (
+        <>
+          <h3 className="text-2xl font-semibold mt-6 mb-2">Add Notice</h3>
+          <div className="mb-6 flex gap-2 flex-wrap">
+            <input
+              type="text"
+              placeholder="Title"
+              value={notice.title}
+              onChange={(e) => setNotice({ ...notice, title: e.target.value })}
+              className="border p-2 rounded w-40"
+            />
+            <input
+              type="text"
+              placeholder="Category"
+              value={notice.category}
+              onChange={(e) => setNotice({ ...notice, category: e.target.value })}
+              className="border p-2 rounded w-40"
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              value={notice.description}
+              onChange={(e) => setNotice({ ...notice, description: e.target.value })}
+              className="border p-2 rounded w-80"
+            />
+            <button
+              onClick={addNotice}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            >
+              Add Notice
+            </button>
+          </div>
+        </>
+      )}
 
-      {/* All Notices */}
+      {/* ================= All Notices ================= */}
       <h3 className="text-2xl font-semibold mt-6 mb-2">All Notices</h3>
       {notices.length === 0 && <p>No notices yet.</p>}
       {notices.map((n) => (
@@ -396,23 +636,30 @@ const addAssignment = async () => {
         />
       ))}
 
-      {/* Student Progress */}
+      {/* ================= Student Progress ================= */}
       <h3 className="text-2xl font-semibold mt-6 mb-2">Student Progress</h3>
       {studentsProgress.length === 0 && <p>No student data yet.</p>}
-      {studentsProgress.map((s) => (
-        <Card
-          key={s.email}
-          title={s.student}
-          description={`Email: ${s.email} | Progress: ${s.progress}%`}
-        >
-          <div className="w-full bg-gray-300 rounded h-3 mt-1">
-            <div
-              className="bg-green-500 h-3 rounded transition-all"
-              style={{ width: `${s.progress}%` }}
-            />
-          </div>
-        </Card>
-      ))}
+      {studentsProgress.map((s) => {
+        // If backend sends student object:
+        const studentName = s.student?.name || s.student || "Unknown";
+        const studentEmail = s.student?.email || s.email || "N/A";
+        const progress = s.progress ?? 0;
+
+        return (
+          <Card
+            key={studentEmail}
+            title={studentName}
+            description={`Email: ${studentEmail} | Progress: ${progress}%`}
+          >
+            <div className="w-full bg-gray-300 rounded h-3 mt-1">
+              <div
+                className="bg-green-500 h-3 rounded transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 }
