@@ -1,0 +1,30 @@
+const express = require("express");
+const router = express.Router();
+const User = require("../models/User");
+const Task = require("../models/Task");
+const { authMiddleware, roleMiddleware } = require("../middleware/authMiddleware");
+
+// Get all students and their progress
+router.get("/students-progress", authMiddleware, roleMiddleware("teacher"), async (req, res) => {
+  try {
+    const students = await User.find({ role: "student" });
+    const result = [];
+
+    for (const student of students) {
+      const tasks = await Task.find({ user: student._id });
+      const completed = tasks.filter(t => t.completed).length;
+      const progress = tasks.length === 0 ? 0 : Math.round((completed / tasks.length) * 100);
+      result.push({
+        student: student.name,
+        email: student.email,
+        progress,
+      });
+    }
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+module.exports = router;
