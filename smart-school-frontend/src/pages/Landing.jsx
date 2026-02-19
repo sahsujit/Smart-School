@@ -156,21 +156,7 @@ export default function Landing() {
           assignments, publish notices, and monitor performance.
         </p>
 
-        {/* CTA Buttons */}
-        <div className="flex gap-4 flex-wrap justify-center mb-16">
-          <Link
-            to="/login"
-            className="bg-white text-blue-700 px-7 py-3 rounded-xl font-semibold hover:bg-gray-100 active:scale-95 transition-all duration-200 shadow-lg"
-          >
-            Login →
-          </Link>
-          <Link
-            to="/register"
-            className="bg-blue-500 hover:bg-blue-400 text-white px-7 py-3 rounded-xl font-semibold active:scale-95 transition-all duration-200 shadow-lg border border-blue-400"
-          >
-            Register →
-          </Link>
-        </div>
+       
 
         {/* ── Feature Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl w-full">
