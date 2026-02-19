@@ -41,9 +41,6 @@ const fetchAssignments = async () => {
 
 
 
-
-
-
   useEffect(() => {
     fetchAllData();
     fetchAssignments();
