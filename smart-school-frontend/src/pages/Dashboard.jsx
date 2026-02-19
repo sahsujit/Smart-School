@@ -969,6 +969,11 @@
 
 
 
+
+
+
+
+
 import { useState, useEffect } from "react";
 import API from "../api/axios";
 
@@ -1005,18 +1010,16 @@ function DeleteConfirmModal({ task, onConfirm, onCancel }) {
   );
 }
 
-// ── Progress Bar Component ──
+// ── Progress Bar ──
 function ProgressBar({ label, value, color, icon, sublabel }) {
   const barColor =
     value === 100 ? "bg-green-500" :
     value >= 50   ? color :
                     "bg-yellow-400";
-
   const badgeColor =
     value === 100 ? "bg-green-100 text-green-700" :
-    value >= 50   ? "bg-blue-100 text-blue-700"   :
+    value >= 50   ? "bg-blue-100 text-blue-700" :
                     "bg-yellow-100 text-yellow-700";
-
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
@@ -1024,55 +1027,61 @@ function ProgressBar({ label, value, color, icon, sublabel }) {
           <span>{icon}</span> {label}
           {sublabel && <span className="text-gray-400 font-normal text-xs ml-1">{sublabel}</span>}
         </p>
-        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${badgeColor}`}>
-          {value}%
-        </span>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${badgeColor}`}>{value}%</span>
       </div>
       <div className="bg-gray-100 rounded-full h-2.5">
-        <div
-          className={`${barColor} h-2.5 rounded-full transition-all duration-700`}
-          style={{ width: `${value}%` }}
-        />
+        <div className={`${barColor} h-2.5 rounded-full transition-all duration-700`} style={{ width: `${value}%` }} />
       </div>
     </div>
   );
 }
 
 export default function Dashboard() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks]                           = useState([]);
   const [teacherAssignments, setTeacherAssignments] = useState([]);
   const [completedAssignments, setCompletedAssignments] = useState(new Set());
-  const [task, setTask] = useState({ title: "", subject: "", dueDate: "" });
-  const [loading, setLoading] = useState(true);
+  const [task, setTask]         = useState({ title: "", subject: "", dueDate: "" });
+  const [loading, setLoading]   = useState(true);
   const [taskToDelete, setTaskToDelete] = useState(null);
 
+  // ── Fetch tasks ──
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [tasksRes] = await Promise.all([API.get("/tasks")]);
-      setTasks(tasksRes.data || []);
+      const res = await API.get("/tasks");
+      setTasks(res.data || []);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // ── Fetch public assignments ──
   const fetchAssignments = async () => {
     try {
       const res = await API.get("/assignments/public");
-      setTeacherAssignments(res.data);
+      setTeacherAssignments(res.data || []);
     } catch (error) {
       console.log("Error fetching assignments:", error);
+    }
+  };
+
+  // ── Fetch completed assignments from BACKEND (not localStorage) ──
+  const fetchCompletedAssignments = async () => {
+    try {
+      const res = await API.get("/assignments/completed");
+      // res.data = [{ student, assignment, ... }]
+      setCompletedAssignments(new Set(res.data.map((c) => c.assignment)));
+    } catch (error) {
+      console.log("Error fetching completed assignments:", error);
     }
   };
 
   useEffect(() => {
     fetchAllData();
     fetchAssignments();
-    // Load saved completed assignments from localStorage
-    const saved = localStorage.getItem("completedAssignments");
-    if (saved) setCompletedAssignments(new Set(JSON.parse(saved)));
+    fetchCompletedAssignments();
   }, []);
 
   const addTask = async () => {
@@ -1095,18 +1104,18 @@ export default function Dashboard() {
     }
   };
 
-  // Toggle assignment completion (local state + localStorage)
-  const toggleAssignmentComplete = (id) => {
-    setCompletedAssignments((prev) => {
-      const updated = new Set(prev);
-      if (updated.has(id)) updated.delete(id);
-      else updated.add(id);
-      localStorage.setItem("completedAssignments", JSON.stringify([...updated]));
-      return updated;
-    });
+  // ── Toggle assignment complete → saves to BACKEND ──
+  const toggleAssignmentComplete = async (id) => {
+    try {
+      await API.post(`/assignments/complete/${id}`);
+      // Refresh from backend so teacher dashboard also reflects it
+      await fetchCompletedAssignments();
+    } catch (error) {
+      console.error("Error toggling assignment completion:", error);
+    }
   };
 
-  const confirmDelete = (task) => setTaskToDelete(task);
+  const confirmDelete   = (task) => setTaskToDelete(task);
 
   const handleDeleteConfirmed = async () => {
     try {
@@ -1119,14 +1128,12 @@ export default function Dashboard() {
     }
   };
 
-  // ── Progress Calculations ──
-  const completedTasks = tasks.filter((t) => t.completed).length;
-  const taskProgress = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
-
+  // ── Progress calculations ──
+  const completedTasks          = tasks.filter((t) => t.completed).length;
+  const taskProgress            = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
   const completedAssignmentsCount = teacherAssignments.filter((a) => completedAssignments.has(a._id)).length;
-  const assignmentProgress = teacherAssignments.length === 0 ? 0 : Math.round((completedAssignmentsCount / teacherAssignments.length) * 100);
-
-  const overallProgress = tasks.length === 0 && teacherAssignments.length === 0
+  const assignmentProgress      = teacherAssignments.length === 0 ? 0 : Math.round((completedAssignmentsCount / teacherAssignments.length) * 100);
+  const overallProgress         = tasks.length === 0 && teacherAssignments.length === 0
     ? 0
     : Math.round((taskProgress + assignmentProgress) / 2);
 
@@ -1188,10 +1195,7 @@ export default function Dashboard() {
             <span className="bg-blue-100 text-blue-600 p-1.5 rounded-lg">📊</span>
             Progress Overview
           </h3>
-
           <div className="flex flex-col gap-5">
-
-            {/* Task Progress */}
             <ProgressBar
               label="My Tasks"
               value={taskProgress}
@@ -1199,8 +1203,6 @@ export default function Dashboard() {
               icon="📋"
               sublabel={`${completedTasks} / ${tasks.length} completed`}
             />
-
-            {/* Assignment Progress */}
             <ProgressBar
               label="Assignments"
               value={assignmentProgress}
@@ -1208,31 +1210,25 @@ export default function Dashboard() {
               icon="📚"
               sublabel={`${completedAssignmentsCount} / ${teacherAssignments.length} completed`}
             />
-
-            {/* Divider */}
             <div className="h-px bg-gray-100" />
-
             {/* Overall */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <p className="font-semibold text-gray-800 flex items-center gap-1.5">
                   <span>🏆</span> Overall Progress
-                  <span className="text-gray-400 font-normal text-xs ml-1">(average of both)</span>
+                  <span className="text-gray-400 text-xs font-normal ml-1">(average of both)</span>
                 </p>
                 <span className={`text-sm font-bold px-3 py-1 rounded-full ${
                   overallProgress === 100 ? "bg-green-100 text-green-700" :
-                  overallProgress >= 50  ? "bg-blue-100 text-blue-700"   :
-                                           "bg-yellow-100 text-yellow-700"
-                }`}>
-                  {overallProgress}%
-                </span>
+                  overallProgress >= 50   ? "bg-blue-100 text-blue-700" :
+                                            "bg-yellow-100 text-yellow-700"
+                }`}>{overallProgress}%</span>
               </div>
               <div className="bg-gray-100 rounded-full h-4">
                 <div
                   className={`h-4 rounded-full transition-all duration-700 ${
                     overallProgress === 100 ? "bg-green-500" :
-                    overallProgress >= 50  ? "bg-blue-500"  :
-                                             "bg-yellow-400"
+                    overallProgress >= 50   ? "bg-blue-500" : "bg-yellow-400"
                   }`}
                   style={{ width: `${overallProgress}%` }}
                 />
@@ -1395,8 +1391,6 @@ export default function Dashboard() {
                     <p className="text-sm text-gray-500">
                       👤 By: <span className="font-medium text-gray-700">{a.teacher?.name || "Teacher"}</span>
                     </p>
-
-                    {/* Mark as done button */}
                     <button
                       onClick={() => toggleAssignmentComplete(a._id)}
                       className={`mt-3 text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
