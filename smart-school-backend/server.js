@@ -12,6 +12,8 @@ const adminRoutes = require("./routes/admin");
 const assignmentRoutes = require("./routes/assignmentRoutes");
 require("dotenv").config();
 
+require("./models/CompletedAssignment");
+
 // Connect to MongoDB
 connectDB();
 
