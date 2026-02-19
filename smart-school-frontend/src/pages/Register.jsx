@@ -1,5 +1,174 @@
+// import { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import API from "../api/axios";
+// import { setToken } from "../utils/auth";
+
+// export default function Register() {
+//   const [name, setName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [role, setRole] = useState("student"); // default role
+//   const [error, setError] = useState("");
+//   const navigate = useNavigate();
+
+//   const handleRegister = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const res = await API.post("/auth/register", { name, email, password, role });
+
+//       // Save token and role
+//       setToken(res.data.token);
+//       localStorage.setItem("role", res.data.role);
+
+//       // Navigate based on role
+//       if (res.data.role === "teacher") {
+//         navigate("/teacher");
+//       } else {
+//         navigate("/dashboard");
+//       }
+//     } catch (err) {
+//       setError(err.response?.data?.message || "Registration failed");
+//     }
+//   };
+
+//   return (
+    
+
+
+//     <div className="min-h-screen h-screen overflow-hidden flex flex-col justify-center items-center p-6 relative bg-blue-950">
+
+//   {/* Blob Accents */}
+//   <div className="absolute top-0 left-0 w-72 h-72 bg-purple-700 opacity-30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+//   <div className="absolute bottom-0 right-0 w-72 h-72 bg-blue-500 opacity-30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+
+//   <div className="relative z-10 bg-white/10 dark:bg-gray-900/60 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl p-6 w-full max-w-sm mx-auto transition-colors duration-300">
+    
+//     <h2 className="text-3xl font-extrabold text-center text-white mb-4">
+//       Register
+//     </h2>
+
+//     <form onSubmit={handleRegister} className="flex flex-col gap-3">
+      
+//       <input
+//         type="text"
+//         placeholder="Name"
+//         value={name}
+//         onChange={(e) => setName(e.target.value)}
+//         className="border border-white/30
+//                    bg-white/10
+//                    text-white
+//                    placeholder-gray-400
+//                    focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
+//                    outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
+//       />
+
+//       <input
+//         type="email"
+//         placeholder="Email"
+//         value={email}
+//         onChange={(e) => setEmail(e.target.value)}
+//         className="border border-white/30
+//                    bg-white/10
+//                    text-white
+//                    placeholder-gray-400
+//                    focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
+//                    outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
+//       />
+
+//       <input
+//         type="password"
+//         placeholder="Password"
+//         value={password}
+//         onChange={(e) => setPassword(e.target.value)}
+//         className="border border-white/30
+//                    bg-white/10
+//                    text-white
+//                    placeholder-gray-400
+//                    focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
+//                    outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
+//       />
+
+//       {/* Role Selection */}
+//       <select
+//         value={role}
+//         onChange={(e) => setRole(e.target.value)}
+//         className="border border-white/30
+//                    bg-indigo-900/60
+//                    text-white
+//                    focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
+//                    outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
+//       >
+//         <option value="student" className="bg-indigo-900">Student</option>
+//         <option value="teacher" className="bg-indigo-900">Teacher</option>
+//       </select>
+
+//       {error && (
+//         <div className="bg-red-500/20 border border-red-400/50 text-red-300 text-sm p-2.5 rounded-lg">
+//           ⚠️ {error}
+//         </div>
+//       )}
+
+//       <button
+//         className="bg-blue-600 hover:bg-blue-500 active:scale-95
+//                    text-white font-semibold py-2.5 rounded-lg mt-2
+//                    transition-all duration-200 shadow-lg shadow-blue-600/30"
+//       >
+//         Register
+//       </button>
+
+//       <p className="text-center text-sm text-gray-400 mt-1">
+//         Already have an account?{" "}
+//         <a href="/login" className="text-blue-300 hover:underline font-medium">
+//           Log in
+//         </a>
+//       </p>
+
+//     </form>
+//   </div>
+// </div>
+
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
 import { setToken } from "../utils/auth";
 
@@ -7,125 +176,222 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student"); // default role
+  const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState("student");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       const res = await API.post("/auth/register", { name, email, password, role });
 
-      // Save token and role
       setToken(res.data.token);
       localStorage.setItem("role", res.data.role);
 
-      // Navigate based on role
-      if (res.data.role === "teacher") {
-        navigate("/teacher");
-      } else {
-        navigate("/dashboard");
-      }
+      if (res.data.role === "teacher") navigate("/teacher");
+      else navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    
-
-
     <div className="min-h-screen h-screen overflow-hidden flex flex-col justify-center items-center p-6 relative bg-blue-950">
 
-  {/* Blob Accents */}
-  <div className="absolute top-0 left-0 w-72 h-72 bg-purple-700 opacity-30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-  <div className="absolute bottom-0 right-0 w-72 h-72 bg-blue-500 opacity-30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      {/* ── Blobs ── */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-purple-700 opacity-30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-blue-500 opacity-30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
-  <div className="relative z-10 bg-white/10 dark:bg-gray-900/60 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl p-6 w-full max-w-sm mx-auto transition-colors duration-300">
-    
-    <h2 className="text-3xl font-extrabold text-center text-white mb-4">
-      Register
-    </h2>
+      {/* ── Logo ── */}
+      <div className="relative z-10 flex items-center gap-2 mb-6">
+        <span className="text-3xl">🏫</span>
+        <span className="text-white font-bold text-xl tracking-tight">SmartSchool</span>
+      </div>
 
-    <form onSubmit={handleRegister} className="flex flex-col gap-3">
-      
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="border border-white/30
-                   bg-white/10
-                   text-white
-                   placeholder-gray-400
-                   focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
-                   outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
-      />
+      {/* ── Card ── */}
+      <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl p-8 w-full max-w-sm mx-auto">
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="border border-white/30
-                   bg-white/10
-                   text-white
-                   placeholder-gray-400
-                   focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
-                   outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="border border-white/30
-                   bg-white/10
-                   text-white
-                   placeholder-gray-400
-                   focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
-                   outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
-      />
-
-      {/* Role Selection */}
-      <select
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
-        className="border border-white/30
-                   bg-indigo-900/60
-                   text-white
-                   focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40
-                   outline-none p-2.5 rounded-lg text-sm transition backdrop-blur-sm"
-      >
-        <option value="student" className="bg-indigo-900">Student</option>
-        <option value="teacher" className="bg-indigo-900">Teacher</option>
-      </select>
-
-      {error && (
-        <div className="bg-red-500/20 border border-red-400/50 text-red-300 text-sm p-2.5 rounded-lg">
-          ⚠️ {error}
+        {/* Header */}
+        <div className="text-center mb-5">
+          <h2 className="text-3xl font-extrabold text-white">Create Account</h2>
+          <p className="text-gray-400 text-sm mt-1">Join SmartSchool today</p>
         </div>
-      )}
 
-      <button
-        className="bg-blue-600 hover:bg-blue-500 active:scale-95
-                   text-white font-semibold py-2.5 rounded-lg mt-2
-                   transition-all duration-200 shadow-lg shadow-blue-600/30"
-      >
-        Register
-      </button>
+        <form onSubmit={handleRegister} className="flex flex-col gap-4">
 
-      <p className="text-center text-sm text-gray-400 mt-1">
-        Already have an account?{" "}
-        <a href="/login" className="text-blue-300 hover:underline font-medium">
-          Log in
-        </a>
+          {/* ── Name ── */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-gray-300 font-medium">Full Name</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                👤
+              </span>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5
+                           border border-white/20 bg-white/10
+                           text-white placeholder-gray-500
+                           rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400
+                           transition"
+                required
+              />
+            </div>
+          </div>
+
+          {/* ── Email ── */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-gray-300 font-medium">Email</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                ✉️
+              </span>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5
+                           border border-white/20 bg-white/10
+                           text-white placeholder-gray-500
+                           rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400
+                           transition"
+                required
+              />
+            </div>
+          </div>
+
+          {/* ── Password ── */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-gray-300 font-medium">Password</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                🔒
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-9 pr-10 py-2.5
+                           border border-white/20 bg-white/10
+                           text-white placeholder-gray-500
+                           rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400
+                           transition"
+                required
+              />
+              {/* Show / Hide Toggle */}
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition select-none"
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-4-9-7a9.77 9.77 0 012.168-3.821M6.343 6.343A9.956 9.956 0 0112 5c5 0 9 4 9 7a9.956 9.956 0 01-2.343 3.657M15 12a3 3 0 11-6 0 3 3 0 016 0zM3 3l18 18" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* ── Role Selector ── */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-gray-300 font-medium">I am a...</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole("student")}
+                className={`py-2.5 rounded-lg text-sm font-semibold border transition-all ${
+                  role === "student"
+                    ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/30"
+                    : "bg-white/10 border-white/20 text-gray-300 hover:bg-white/20"
+                }`}
+              >
+                🎓 Student
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("teacher")}
+                className={`py-2.5 rounded-lg text-sm font-semibold border transition-all ${
+                  role === "teacher"
+                    ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/30"
+                    : "bg-white/10 border-white/20 text-gray-300 hover:bg-white/20"
+                }`}
+              >
+                👨‍🏫 Teacher
+              </button>
+            </div>
+          </div>
+
+          {/* ── Error ── */}
+          {error && (
+            <div className="bg-red-500/20 border border-red-400/40 text-red-300 text-sm p-3 rounded-lg flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* ── Submit ── */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-500 active:scale-95
+                       text-white font-semibold py-2.5 rounded-lg mt-1
+                       transition-all duration-200 shadow-lg shadow-blue-600/30
+                       disabled:opacity-60 disabled:cursor-not-allowed
+                       flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Create Account →"
+            )}
+          </button>
+
+          {/* ── Divider ── */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-gray-500 text-xs">or</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          {/* ── Login Link ── */}
+          <p className="text-center text-sm text-gray-400">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-300 hover:text-blue-200 hover:underline font-medium transition">
+              Log in →
+            </Link>
+          </p>
+
+        </form>
+      </div>
+
+      <p className="relative z-10 text-gray-600 text-xs mt-6">
+        © {new Date().getFullYear()} SmartSchool. All rights reserved.
       </p>
 
-    </form>
-  </div>
-</div>
-
+    </div>
   );
 }
