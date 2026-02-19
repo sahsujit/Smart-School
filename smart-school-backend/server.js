@@ -29,7 +29,6 @@
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
-
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -39,20 +38,18 @@ const noticeRoutes = require("./routes/noticeRoutes");
 const adminRoutes = require("./routes/admin");
 const assignmentRoutes = require("./routes/assignmentRoutes");
 require("dotenv").config();
-connectDB();
 
+connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
-// Add /api prefix
-app.use("/api/notices", noticeRoutes);
-app.use("/api/tasks", taskRoutes);
+// Use correct prefixes
 app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/notices", noticeRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/assignments", assignmentRoutes)
-
+app.use("/api/assignments", assignmentRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

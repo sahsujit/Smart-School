@@ -1,33 +1,62 @@
-// // controllers/assignmentController.js
 // const Assignment = require("../models/Assignment");
 
-// // Get all assignments for a teacher
-// const getTeacherAssignments = async (req, res) => {
+// // Get all assignments (for students)
+// exports.getAllAssignments = async (req, res) => {
 //   try {
-//     const teacherId = req.user._id; // authMiddleware sets req.user
-//     const assignments = await Assignment.find({ teacher: teacherId }).sort({ createdAt: -1 });
-//     res.json(assignments);
+//     let assignments;
+
+//     if (req.user.role === "teacher") {
+//       // Teacher sees only their own assignments
+//       assignments = await Assignment.find({ teacher: req.user._id })
+//         .populate("teacher", "name email")
+//         .sort({ createdAt: -1 });
+//     } else {
+//       // Student sees all assignments from all teachers
+//       assignments = await Assignment.find()
+//         .populate("teacher", "name email")
+//         .sort({ createdAt: -1 });
+//     }
+
+//     res.status(200).json(assignments);
 //   } catch (err) {
-//     res.status(500).json({ message: err.message });
+//     res.status(500).json({ message: "Failed to fetch assignments", error: err.message });
+//   }
+// };
+
+
+// // Get assignments created by logged-in teacher
+// exports.getTeacherAssignments = async (req, res) => {
+//   try {
+//     const assignments = await Assignment.find({ teacher: req.user._id })
+//       .populate("teacher", "name email")
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).json(assignments);
+//   } catch (err) {
+//     res.status(500).json({
+//       message: "Failed to fetch teacher assignments",
+//       error: err.message,
+//     });
 //   }
 // };
 
 // // Create assignment (teacher only)
-// const createAssignment = async (req, res) => {
-//   const { title, description } = req.body;
+// exports.createAssignment = async (req, res) => {
 //   try {
-//     const assignment = await Assignment.create({
+//     const { title, subject, dueDate } = req.body;
+//     const assignment = new Assignment({
 //       title,
-//       description,
+//       subject,
+//       dueDate,
 //       teacher: req.user._id,
 //     });
+//     await assignment.save();
 //     res.status(201).json(assignment);
 //   } catch (err) {
-//     res.status(500).json({ message: err.message });
+//     res.status(500).json({ message: "Failed to create assignment", error: err.message });
 //   }
 // };
 
-// module.exports = { getTeacherAssignments, createAssignment };
 
 
 
@@ -44,32 +73,54 @@
 
 
 
-// controllers/assignmentController.js
+
 const Assignment = require("../models/Assignment");
 
-const getTeacherAssignments = async (req, res) => {
+// For students and teachers
+getAllAssignments = async (req, res) => {
   try {
-    const teacherId = req.user._id;
-    const assignments = await Assignment.find({ teacher: teacherId }).sort({ createdAt: -1 });
-    res.json(assignments);
+    const assignments = await Assignment.find()
+      .populate("teacher", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(assignments);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Failed to fetch assignments", error: err.message });
   }
 };
 
-const createAssignment = async (req, res) => {
-  const { title, subject, dueDate } = req.body;
+
+// Teacher-only: create assignment
+createAssignment = async (req, res) => {
   try {
-    const assignment = await Assignment.create({
+    const { title, subject, dueDate } = req.body;
+
+    const assignment = new Assignment({
       title,
       subject,
       dueDate,
       teacher: req.user._id,
     });
+
+    await assignment.save();
     res.status(201).json(assignment);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Failed to create assignment", error: err.message });
   }
 };
 
-module.exports = { getTeacherAssignments, createAssignment };
+// Optional: teacher dashboard can also call this endpoint
+getTeacherAssignments = async (req, res) => {
+  try {
+    const assignments = await Assignment.find({ teacher: req.user._id })
+      .populate("teacher", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(assignments);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch teacher assignments", error: err.message });
+  }
+};
+
+
+module.exports = { getAllAssignments, createAssignment, getTeacherAssignments };
