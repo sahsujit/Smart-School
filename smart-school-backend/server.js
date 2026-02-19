@@ -23,7 +23,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:5173", // Vite dev server
   "http://localhost:3000", // Next.js dev server
-  "https://your-frontend.vercel.app", // Deployed frontend
+  "https://smart-school-three.vercel.app", // Deployed frontend
 ];
 
 app.use(
