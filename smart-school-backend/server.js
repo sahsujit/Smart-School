@@ -1,34 +1,7 @@
-// const express = require("express");
-// const dotenv = require("dotenv");
-// const cors = require("cors");
-// const connectDB = require("./config/db");
-
-// dotenv.config();
-// connectDB();
-
-// const app = express();
-
-// // Middleware
-// app.use(cors());
-// app.use(express.json());
-
-// // Routes
-// app.use("/api/auth", require("./routes/authRoutes"));
-// app.use("/api/tasks", require("./routes/taskRoutes"));
-// app.use("/api/notices", require("./routes/noticeRoutes"));
-// app.use("/api/assignments", require("./routes/assignmentRoutes"));
 
 
-// // Error handling middleware
-// app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).json({ message: "Server Error" });
-// });
 
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
+// server.js
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -39,17 +12,54 @@ const adminRoutes = require("./routes/admin");
 const assignmentRoutes = require("./routes/assignmentRoutes");
 require("dotenv").config();
 
+// Connect to MongoDB
 connectDB();
+
 const app = express();
-app.use(cors());
+
+// Middleware
 app.use(express.json());
 
-// Use correct prefixes
+const allowedOrigins = [
+  "http://localhost:5173", // Vite dev server
+  "http://localhost:3000", // Next.js dev server
+  "https://your-frontend.vercel.app", // Deployed frontend
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
+
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/assignments", assignmentRoutes);
 
+// Root route
+app.get("/", (req, res) => {
+  res.send("Smart School Backend is running ✅");
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: err.message || "Server Error" });
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
