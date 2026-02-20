@@ -1129,13 +1129,31 @@ export default function Dashboard() {
   };
 
   // ── Progress calculations ──
-  const completedTasks          = tasks.filter((t) => t.completed).length;
-  const taskProgress            = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
-  const completedAssignmentsCount = teacherAssignments.filter((a) => completedAssignments.has(a._id)).length;
-  const assignmentProgress      = teacherAssignments.length === 0 ? 0 : Math.round((completedAssignmentsCount / teacherAssignments.length) * 100);
-  const overallProgress         = tasks.length === 0 && teacherAssignments.length === 0
-    ? 0
-    : Math.round((taskProgress + assignmentProgress) / 2);
+  // const completedTasks          = tasks.filter((t) => t.completed).length;
+  // const taskProgress            = tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
+  // const completedAssignmentsCount = teacherAssignments.filter((a) => completedAssignments.has(a._id)).length;
+  // const assignmentProgress      = teacherAssignments.length === 0 ? 0 : Math.round((completedAssignmentsCount / teacherAssignments.length) * 100);
+  // const overallProgress         = tasks.length === 0 && teacherAssignments.length === 0
+  //   ? 0
+  //   : Math.round((taskProgress + assignmentProgress) / 2);
+
+
+  // ── Progress calculations ──
+const completedTasks            = tasks.filter((t) => t.completed).length;
+const completedAssignmentsCount = teacherAssignments.filter((a) => completedAssignments.has(a._id)).length;
+
+const hasTaskData       = tasks.length > 0;
+const hasAssignmentData = teacherAssignments.length > 0;
+
+const taskProgress       = hasTaskData       ? Math.round((completedTasks / tasks.length) * 100)                         : 0;
+const assignmentProgress = hasAssignmentData ? Math.round((completedAssignmentsCount / teacherAssignments.length) * 100) : 0;
+
+// Only average what actually exists — don't penalize student for missing data
+const overallProgress =
+  !hasTaskData && !hasAssignmentData ? 0                                         // nothing at all → 0%
+  : !hasTaskData                     ? assignmentProgress                         // only assignments → use assignment %
+  : !hasAssignmentData               ? taskProgress                               // only tasks → use task %
+  : Math.round((taskProgress + assignmentProgress) / 2);                         // both exist → average
 
   if (loading) {
     return (
