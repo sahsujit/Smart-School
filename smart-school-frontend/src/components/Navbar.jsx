@@ -160,7 +160,7 @@ export default function Navbar({ role, setToken, setRole }) {
   };
 
   return (
-    <nav className="bg-blue-600 text-white px-6 py-4">
+    <nav className="bg-blue-950 text-white px-6 py-4">
       {/* Top row */}
       <div className="flex justify-between items-center">
        <div className="flex items-center gap-2">
