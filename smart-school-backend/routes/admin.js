@@ -135,7 +135,17 @@ router.get("/students-progress", authMiddleware, roleMiddleware("teacher"), asyn
           : Math.round((completedAssignmentsCount / totalAssignments) * 100);
 
       // ── Overall (average of both) ──
-      const overallProgress = Math.round((taskProgress + assignmentProgress) / 2);
+      // const overallProgress = Math.round((taskProgress + assignmentProgress) / 2);
+const hasTasks       = tasks.length > 0;
+const hasAssignments = totalAssignments > 0;
+
+const overallProgress =
+  !hasTasks && !hasAssignments ? 0
+  : !hasTasks                  ? assignmentProgress
+  : !hasAssignments            ? taskProgress
+  : Math.round((taskProgress + assignmentProgress) / 2);
+
+
 
       result.push({
         student: { name: student.name, email: student.email },
